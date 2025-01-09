@@ -65,12 +65,11 @@ public boolean addUser(String name) {
      *  If any of the two names is not a user in this network,
      *  or if the "follows" addition failed for some reason, returns false. */
     public boolean addFollowee(String name1, String name2) {
-        if (getUser(name1)==null)
+        if (name1.equalsIgnoreCase(name2))
         {
-        return false;
+            return false;
         }
-        if (getUser(name2) == null)
-        {
+        if (getUser(name1) == null || getUser(name2) == null) {
             return false;
         }
         return getUser(name1).addFollowee(name2);
@@ -79,21 +78,32 @@ public boolean addUser(String name) {
     /** For the user with the given name, recommends another user to follow. The recommended user is
      *  the user that has the maximal mutual number of followees as the user with the given name. */
     public String recommendWhoToFollow(String name) {
-        String recommend = users[0].getName();
-        User username = getUser(name);
-        int count = username.countMutual(users[0]);
-        for (int i=0; i<userCount;i++)
-        {
-            int nowcount = username.countMutual(users[i]);
-            if (count < nowcount)
-            {
-                recommend = users[i].getName();
-                count = nowcount;
+        User currentUser = getUser(name);
+        if (currentUser == null) {
+            return null;  
+        }
+    
+        String recommendedUser = null;
+        int maxMutualCount = -1;  
+    
+        for (int i = 0; i < userCount; i++) {
+            User otherUser = users[i];
+    
+            if (otherUser.getName().equals(name)) {
+                continue;
+            }
+    
+            int mutualCount = currentUser.countMutual(otherUser);
+    
+            if (mutualCount > maxMutualCount) {
+                recommendedUser = otherUser.getName();
+                maxMutualCount = mutualCount;
             }
         }
-
-        return recommend;
+    
+        return recommendedUser;
     }
+    
     public int howManyFollow(String name) {
         User now = getUser(name); 
         if (now == null) {
@@ -145,12 +155,15 @@ public boolean addUser(String name) {
 
     // Returns a textual description of all the users in this network, and who they follow.
     public String toString() {
-        String allData="";
-        for (int i = 0; i<userCount; i++)
-        {
-            allData += users[i].toString();
-
+        String description = "Network:\n"; 
+        for (int i = 0; i < userCount; i++) {
+            description += users[i].toString() + "\n"; 
         }
-            return null;
-    }
+    
+        if (description.endsWith("\n")) {
+            description = description.substring(0, description.length() - 1);
+        }
+    
+        return description;
+}
 }
